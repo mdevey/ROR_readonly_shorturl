@@ -10,6 +10,12 @@ readonlyrest:
       kibana_access: ro
       hosts: ["kib_ro"]
 
+    - name: "kibana_short_url"
+      uri_re: "^/.kibana/doc/url.*"
+      kibana_access: rw
+      methods: [POST]
+      hosts: ["kib_ro"]
+
     - name: "monitor"
       verbosity: error
       actions: ["cluster:admin/xpack/monitoring/bulk"]
