@@ -1,0 +1,43 @@
+version: '2.2'
+
+x-template:
+  kibana: &template
+    image: docker.elastic.co/kibana/kibana:6.5.1
+    environment:
+      - "XPACK_XPACK_MAIN_TELEMETRY_ENABLED=false"
+
+services:
+  # This is the server that will use RoR 'kibana_access:ro' and *should* be able to write short urls.
+  # 'Discover' > 'Share' > 'Permalinks' > toggle 'Short Url'
+  # Results in "Unable to create short URL. Error: Forbidden"
+  kib_ro:
+    <<: *template
+    container_name: kib_ro
+    ports:
+      - 5602:5601 #Read Only on 5602
+    restart: on-failure #fails until container 'kib' has written .kibana index first time.
+
+  # Need service to write the kibana index, add sample data etc (do this by hand)
+  kib:
+    <<: *template
+    container_name: kib
+    ports:
+      - 5601:5601
+
+  elasticsearch:
+    #See Dockerfile docker.elastic.co/elasticsearch/elasticsearch:6.5.1
+    build: ./Dockerfile
+    container_name: elasticsearch
+    environment:
+      - "bootstrap.memory_lock=true"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "xpack.security.enabled=false" #required readonlyrest.
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /usr/share/elasticsearch/data
+      - ./readonlyrest.yml:/usr/share/elasticsearch/config/readonlyrest.yml
+    ports:
+      - 9200:9200

@@ -1,0 +1,26 @@
+readonlyrest:
+    access_control_rules:
+
+    - name: "kib"
+      verbosity: error
+      hosts: [ "kib" ]
+
+    - name: "kib_ro"
+      verbosity: error
+      kibana_access: ro
+      hosts: ["kib_ro"]
+
+    - name: "monitor"
+      verbosity: error
+      actions: ["cluster:admin/xpack/monitoring/bulk"]
+      hosts: ["kib_ro"]
+
+    - name: "public"
+      verbosity: error
+      actions: ["indices:data/read/*",
+                "indices:admin/template/get",
+                "indices:monitor/stats",
+                "indices:monitor/settings/get",
+                "cluster:admin/ingest/pipeline/get",
+                "cluster:monitor/*"]
+
